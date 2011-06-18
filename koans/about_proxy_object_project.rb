@@ -13,12 +13,35 @@ require File.expand_path(File.dirname(__FILE__) + '/edgecase')
 # of the Proxy class is given in the AboutProxyObjectProject koan.
 
 class Proxy
+  
+  attr_reader :messages
+  
   def initialize(target_object)
     @object = target_object
     # ADD MORE CODE HERE
+    @messages = []
   end
-
-  # WRITE CODE HERE
+  
+  def method_missing(sym, *args, &block)
+    if @object.respond_to? sym
+      @messages << sym
+      @object.__send__(sym, *args, &block)
+    else
+      raise NoMethodError, "Delegate does not respond to method #{sym}"
+    end
+  end
+  
+  def respond_to?(sym)
+    @object.respond_to? sym
+  end
+  
+  def called?(sym)
+    @messages.include? sym
+  end
+  
+  def number_of_times_called(sym)
+    @messages.collect { |elem| elem if elem == sym }.compact.size
+  end
 end
 
 # The proxy object should pass the following Koan:
